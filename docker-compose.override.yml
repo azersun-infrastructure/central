@@ -1,0 +1,8 @@
+services:
+  opscentral-app:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  postgres:
+    ports:
+      - "5432:5432"

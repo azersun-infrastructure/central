@@ -1,0 +1,29 @@
+@inherits LayoutComponentBase
+
+<div class="app-layout">
+    <NavMenu />
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="breadcrumb">Pages / User Management</div>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="user-badge">
+                        Signed in as <strong>@context.User.Identity?.Name</strong>
+                        <form method="post" action="/Account/Logout" data-enhance-nav="false" style="display:inline">
+                            <button type="submit" class="link-button">Sign out</button>
+                        </form>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+
+        @Body
+    </div>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>

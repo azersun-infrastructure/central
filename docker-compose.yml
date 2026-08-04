@@ -1,0 +1,30 @@
+services:
+  opscentral-app:
+    build: ./OpsCentral
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - UseDatabase=Postgres
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=opscentral;Username=opscentral_user;Password=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_DB=opscentral
+      - POSTGRES_USER=opscentral_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opscentral_user -d opscentral"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

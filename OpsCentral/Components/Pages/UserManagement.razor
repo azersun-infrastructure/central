@@ -1,0 +1,109 @@
+@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@using OpsCentral.Components.Pages.UserManagementParts
+@using OpsCentral.Services
+@inject IAdActionRequestService RequestService
+@implements IAsyncDisposable
+
+<PageTitle>User Management — OpsCentral</PageTitle>
+
+<h1>User Management</h1>
+
+<ActionPanel Busy="_busy" OnSubmit="HandleSubmitAsync" />
+
+<RequestResultTable Requests="_requests" OnViewDetail="HandleViewDetailAsync" />
+
+<RequestDetailModal Request="_selectedRequest" Visible="_showDetail" OnClose="HandleCloseDetail" />
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    private List<Models.Entities.AdActionRequest> _requests = [];
+    private Models.Entities.AdActionRequest? _selectedRequest;
+    private bool _showDetail;
+    private bool _busy;
+
+    private PeriodicTimer? _refreshTimer;
+    private CancellationTokenSource? _refreshCts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshAsync();
+
+        _refreshCts = new CancellationTokenSource();
+        _refreshTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        _ = RunRefreshLoopAsync(_refreshCts.Token);
+    }
+
+    private async Task RunRefreshLoopAsync(CancellationToken ct)
+    {
+        try
+        {
+            while (await _refreshTimer!.WaitForNextTickAsync(ct))
+            {
+                await RefreshAsync();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected on dispose.
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        _requests = await RequestService.GetRecentAsync(50, CancellationToken.None);
+    }
+
+    private async Task HandleSubmitAsync((Models.Entities.AdActionType ActionType, string Username) submission)
+    {
+        _busy = true;
+        try
+        {
+            var (upn, authSource) = await ResolveCurrentUserAsync();
+            await RequestService.SubmitActionAsync(submission.ActionType, submission.Username, upn, authSource, CancellationToken.None);
+            await RefreshAsync();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task<(string Upn, string AuthSource)> ResolveCurrentUserAsync()
+    {
+        if (AuthStateTask is null)
+        {
+            return ("unknown", "unknown");
+        }
+
+        var authState = await AuthStateTask;
+        var user = authState.User;
+        var name = user.Identity?.Name ?? "unknown";
+        var authSource = user.Claims.FirstOrDefault(c => c.Type == "AuthSource")?.Value ?? "EntraId";
+
+        return (name, authSource);
+    }
+
+    private async Task HandleViewDetailAsync(Guid id)
+    {
+        _selectedRequest = await RequestService.GetWithEventsAsync(id, CancellationToken.None);
+        _showDetail = true;
+    }
+
+    private void HandleCloseDetail()
+    {
+        _showDetail = false;
+        _selectedRequest = null;
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _refreshCts?.Cancel();
+        _refreshCts?.Dispose();
+        _refreshTimer?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}

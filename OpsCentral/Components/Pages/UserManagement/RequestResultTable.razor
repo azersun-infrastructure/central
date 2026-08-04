@@ -1,0 +1,51 @@
+@namespace OpsCentral.Components.Pages.UserManagementParts
+@using OpsCentral.Models.Entities
+
+<div class="result-table-wrapper">
+    <div class="result-table-header">Request Result Table</div>
+
+    <table class="result-table">
+        <thead>
+            <tr>
+                <th>Input</th>
+                <th>Action</th>
+                <th>Status</th>
+                <th>DateTime</th>
+                <th>Action Note</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Requests.Count == 0)
+            {
+                <tr>
+                    <td colspan="5" class="empty-row">No requests yet.</td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var request in Requests)
+                {
+                    <tr>
+                        <td>@request.Input</td>
+                        <td>@request.ActionType</td>
+                        <td><span class="status-badge status-@request.Status.ToLowerInvariant()">@request.Status</span></td>
+                        <td>@request.RequestedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>
+                            <a href="javascript:void(0)" @onclick="() => OnViewDetail.InvokeAsync(request.Id)">
+                                @(string.IsNullOrEmpty(request.ActionNote) ? "Click to see full log…" : request.ActionNote)
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter]
+    public List<AdActionRequest> Requests { get; set; } = [];
+
+    [Parameter]
+    public EventCallback<Guid> OnViewDetail { get; set; }
+}

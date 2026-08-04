@@ -1,0 +1,32 @@
+@namespace OpsCentral.Components.Pages.UserManagementParts
+@using OpsCentral.Models.Entities
+
+<div class="panel">
+    <h2>Manage Enterprise User</h2>
+
+    <input class="username-input" type="text" placeholder="Username" @bind="_username" @bind:event="oninput" />
+
+    <div class="action-grid">
+        <button class="action-btn" disabled="@(Busy || IsUsernameEmpty)" @onclick="() => SubmitAsync(AdActionType.Unlock)">Unlock</button>
+        <button class="action-btn" disabled="@(Busy || IsUsernameEmpty)" @onclick="() => SubmitAsync(AdActionType.Search)">Search</button>
+        <button class="action-btn" disabled="@(Busy || IsUsernameEmpty)" @onclick="() => SubmitAsync(AdActionType.Disable)">Disable</button>
+        <button class="action-btn" disabled="@(Busy || IsUsernameEmpty)" @onclick="() => SubmitAsync(AdActionType.Enable)">Enable</button>
+        <button class="action-btn" disabled="@(Busy || IsUsernameEmpty)" @onclick="() => SubmitAsync(AdActionType.SendLocked)">Send Locked</button>
+        <button class="action-btn" disabled="@Busy" @onclick="() => SubmitAsync(AdActionType.SyncAd)">Sync AD</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool Busy { get; set; }
+
+    [Parameter]
+    public EventCallback<(AdActionType ActionType, string Username)> OnSubmit { get; set; }
+
+    private string _username = string.Empty;
+
+    private bool IsUsernameEmpty => string.IsNullOrWhiteSpace(_username);
+
+    private Task SubmitAsync(AdActionType actionType) =>
+        OnSubmit.InvokeAsync((actionType, _username.Trim()));
+}

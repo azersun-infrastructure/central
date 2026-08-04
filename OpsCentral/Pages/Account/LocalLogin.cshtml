@@ -1,0 +1,39 @@
+@page "/Account/LocalLogin"
+@model OpsCentral.Pages.Account.LocalLoginModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>OpsCentral — Local Admin Login</title>
+    <link rel="stylesheet" href="~/app.css" />
+</head>
+<body>
+    <div style="max-width:360px;margin:80px auto;font-family:sans-serif;">
+        <h1>OpsCentral</h1>
+        <h2>Local Fallback Admin Login</h2>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <p style="color:red">@Model.ErrorMessage</p>
+        }
+
+        <form method="post">
+            <div>
+                <label for="Username">Username</label>
+                <input type="text" id="Username" asp-for="Username" required autofocus />
+            </div>
+            <div>
+                <label for="Password">Password</label>
+                <input type="password" id="Password" asp-for="Password" required />
+            </div>
+            <input type="hidden" asp-for="ReturnUrl" />
+            <button type="submit">Sign in</button>
+        </form>
+
+        <p><a href="/MicrosoftIdentity/Account/SignIn">Sign in with Entra ID instead</a></p>
+    </div>
+</body>
+</html>

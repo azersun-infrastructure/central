@@ -1,0 +1,31 @@
+<div class="sidebar">
+    <div class="sidebar-header">
+        <span class="sidebar-header-icon">▦</span>
+        <span>OpsCentral</span>
+    </div>
+
+    <nav>
+        <NavLink class="nav-item" href="/" Match="NavLinkMatch.All">
+            <span class="nav-item-icon">🔓</span> User Management
+        </NavLink>
+
+        @foreach (var comingSoon in ComingSoonSections)
+        {
+            <span class="nav-item nav-item-disabled" title="Coming soon">
+                <span class="nav-item-icon">@comingSoon.Icon</span> @comingSoon.Label
+                <span class="nav-item-badge">Soon</span>
+            </span>
+        }
+    </nav>
+</div>
+
+@code {
+    private static readonly (string Icon, string Label)[] ComingSoonSections =
+    [
+        ("☁️", "M365"),
+        ("⏰", "Expired users"),
+        ("➕", "Create User"),
+        ("🔑", "Password Management"),
+        ("📦", "Package Deployment")
+    ];
+}

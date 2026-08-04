@@ -1,0 +1,66 @@
+@namespace OpsCentral.Components.Pages.UserManagementParts
+@using OpsCentral.Models.Entities
+
+@if (Visible && Request is not null)
+{
+    <div class="modal-overlay" @onclick="() => OnClose.InvokeAsync()">
+        <div class="modal" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>@Request.ActionType — @Request.Input</h3>
+                <button class="link-button" @onclick="() => OnClose.InvokeAsync()">✕</button>
+            </div>
+
+            <dl class="modal-summary">
+                <dt>Status</dt>
+                <dd><span class="status-badge status-@Request.Status.ToLowerInvariant()">@Request.Status</span></dd>
+                <dt>Requested by</dt>
+                <dd>@Request.RequestedByUpnOrUsername (@Request.RequestedByAuthSource)</dd>
+                <dt>Dispatch target</dt>
+                <dd>@Request.DispatchTarget</dd>
+                @if (!string.IsNullOrEmpty(Request.ExternalJobUrl))
+                {
+                    <dt>External job</dt>
+                    <dd><a href="@Request.ExternalJobUrl" target="_blank" rel="noopener">@Request.ExternalJobUrl</a></dd>
+                }
+                @if (!string.IsNullOrEmpty(Request.ErrorDetail))
+                {
+                    <dt>Error</dt>
+                    <dd>@Request.ErrorDetail</dd>
+                }
+            </dl>
+
+            <h4>Event history</h4>
+            <ul class="event-list">
+                @foreach (var evt in Request.Events)
+                {
+                    <li>
+                        <span class="event-time">@evt.OccurredAtUtc.ToLocalTime().ToString("HH:mm:ss")</span>
+                        <span class="event-source">[@evt.Source]</span>
+                        <span class="event-status">@evt.StatusAtEvent</span>
+                        @if (!string.IsNullOrEmpty(evt.Message))
+                        {
+                            <span class="event-message">— @evt.Message</span>
+                        }
+                    </li>
+                }
+            </ul>
+
+            @if (!string.IsNullOrEmpty(Request.RawResultPayload))
+            {
+                <h4>Raw result payload</h4>
+                <pre class="raw-payload">@Request.RawResultPayload</pre>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public AdActionRequest? Request { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+}

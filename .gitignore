@@ -1,0 +1,26 @@
+# Build output
+bin/
+obj/
+publish/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Local dev database
+*.db
+*.db-shm
+*.db-wal
+
+# Local secrets / environment
+.env
+appsettings.Production.json
+appsettings.*.local.json
+
+# User secrets are stored outside the repo by design (%APPDATA%/Microsoft/UserSecrets), nothing to ignore here.
+
+# Logs
+*.log
