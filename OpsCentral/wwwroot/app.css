@@ -248,10 +248,19 @@ body {
     background: #fff;
     border-radius: 10px;
     padding: 1.5rem 2rem;
-    max-width: 640px;
+    max-width: 900px;
     width: 90%;
     max-height: 85vh;
     overflow-y: auto;
+}
+
+.result-table-scroll {
+    overflow-x: auto;
+    margin-top: 0.5rem;
+}
+
+.result-table-scroll table.result-table {
+    white-space: nowrap;
 }
 
 .modal-header {

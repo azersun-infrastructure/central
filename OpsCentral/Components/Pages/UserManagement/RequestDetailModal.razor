@@ -1,4 +1,5 @@
 @namespace OpsCentral.Components.Pages.UserManagementParts
+@using System.Text.Json
 @using OpsCentral.Models.Entities
 
 @if (Visible && Request is not null)
@@ -45,7 +46,34 @@
                 }
             </ul>
 
-            @if (!string.IsNullOrEmpty(Request.RawResultPayload))
+            @if (_tableColumns is { Count: > 0 } columns && _tableRows is { Count: > 0 } rows)
+            {
+                <h4>Nəticələr (@rows.Count)</h4>
+                <div class="result-table-scroll">
+                    <table class="result-table">
+                        <thead>
+                            <tr>
+                                @foreach (var col in columns)
+                                {
+                                    <th>@col</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in rows)
+                            {
+                                <tr>
+                                    @foreach (var col in columns)
+                                    {
+                                        <td>@(row.GetValueOrDefault(col, ""))</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else if (!string.IsNullOrEmpty(Request.RawResultPayload))
             {
                 <h4>Raw result payload</h4>
                 <pre class="raw-payload">@Request.RawResultPayload</pre>
@@ -55,6 +83,10 @@
 }
 
 @code {
+    private AdActionRequest? _lastParsedRequest;
+    private List<string>? _tableColumns;
+    private List<Dictionary<string, string>>? _tableRows;
+
     [Parameter]
     public AdActionRequest? Request { get; set; }
 
@@ -63,4 +95,73 @@
 
     [Parameter]
     public EventCallback OnClose { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(Request, _lastParsedRequest))
+        {
+            return;
+        }
+
+        _lastParsedRequest = Request;
+        (_tableColumns, _tableRows) = TryBuildTable(Request?.RawResultPayload);
+    }
+
+    /// <summary>Renders RawResultPayload as a table when it's a JSON array of flat objects
+    /// (e.g. the n8n LDAP search results) — otherwise falls back to the raw-text view, since
+    /// Jenkins/Azure Automation callbacks can send arbitrary free-form payloads.</summary>
+    private static (List<string>? Columns, List<Dictionary<string, string>>? Rows) TryBuildTable(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return (null, null);
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.ValueKind != JsonValueKind.Array || doc.RootElement.GetArrayLength() == 0)
+            {
+                return (null, null);
+            }
+
+            var columns = new List<string>();
+            var rows = new List<Dictionary<string, string>>();
+
+            foreach (var item in doc.RootElement.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object)
+                {
+                    return (null, null);
+                }
+
+                var row = new Dictionary<string, string>();
+                foreach (var prop in item.EnumerateObject())
+                {
+                    if (!columns.Contains(prop.Name))
+                    {
+                        columns.Add(prop.Name);
+                    }
+
+                    row[prop.Name] = prop.Value.ValueKind switch
+                    {
+                        JsonValueKind.String => prop.Value.GetString() ?? "",
+                        JsonValueKind.Null => "",
+                        JsonValueKind.True => "true",
+                        JsonValueKind.False => "false",
+                        JsonValueKind.Array or JsonValueKind.Object => prop.Value.GetRawText(),
+                        _ => prop.Value.GetRawText()
+                    };
+                }
+
+                rows.Add(row);
+            }
+
+            return (columns, rows);
+        }
+        catch (JsonException)
+        {
+            return (null, null);
+        }
+    }
 }
