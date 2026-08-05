@@ -13,7 +13,7 @@
 
 <RequestResultTable Requests="_requests" OnViewDetail="HandleViewDetailAsync" />
 
-<RequestDetailModal Request="_selectedRequest" Visible="_showDetail" OnClose="HandleCloseDetail" />
+<RequestDetailModal Request="_selectedRequest" Visible="_showDetail" OnClose="HandleCloseDetail" OnRowAction="HandleRowActionAsync" />
 
 @code {
     [CascadingParameter]
@@ -70,6 +70,14 @@
         {
             _busy = false;
         }
+    }
+
+    /// <summary>Triggered by an Unlock/Enable/Disable button on a search-result row — submits the
+    /// same way the ActionPanel buttons do, then closes the modal since the user is done with it.</summary>
+    private async Task HandleRowActionAsync((Models.Entities.AdActionType ActionType, string Username) request)
+    {
+        await HandleSubmitAsync(request);
+        HandleCloseDetail();
     }
 
     private async Task<(string Upn, string AuthSource)> ResolveCurrentUserAsync()

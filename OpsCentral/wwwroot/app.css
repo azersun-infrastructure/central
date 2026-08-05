@@ -313,6 +313,25 @@ body {
     white-space: nowrap;
 }
 
+.row-actions {
+    white-space: nowrap;
+}
+
+.row-action-btn {
+    background: var(--oc-panel-bg);
+    border: 1px solid var(--oc-input-border);
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    margin-right: 0.3rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+}
+
+.row-action-btn:hover {
+    border-color: var(--oc-accent);
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;
