@@ -19,6 +19,7 @@ publish/
 .env
 appsettings.Production.json
 appsettings.*.local.json
+DEPLOYMENT-CREDENTIALS.md
 
 # User secrets are stored outside the repo by design (%APPDATA%/Microsoft/UserSecrets), nothing to ignore here.
 

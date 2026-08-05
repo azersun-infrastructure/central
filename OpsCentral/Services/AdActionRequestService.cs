@@ -49,7 +49,17 @@ public class AdActionRequestService(
         var now = DateTimeOffset.UtcNow;
         request.DispatchedAtUtc = now;
 
-        if (result.Success)
+        if (result.Success && result.IsSynchronous)
+        {
+            // Dispatcher already produced the final result (e.g. n8n's synchronous webhook) —
+            // no Running/poll phase, and CallbackReceivedAtUtc keeps reconciliation from touching it.
+            request.Status = (result.FinalStatus ?? JobStatus.Succeeded).ToString();
+            request.ActionNote = result.ActionNote;
+            request.RawResultPayload = result.RawPayload;
+            request.ExternalJobUrl = result.ExternalJobUrl;
+            request.CallbackReceivedAtUtc = now;
+        }
+        else if (result.Success)
         {
             request.Status = JobStatus.Running.ToString();
             request.ExternalJobId = result.ExternalJobId;
@@ -69,7 +79,8 @@ public class AdActionRequestService(
             AdActionRequestId = request.Id,
             Source = AdActionEventSource.Dispatch,
             StatusAtEvent = request.Status,
-            Message = result.Success ? "Dispatched successfully." : result.ErrorMessage
+            Message = result.Success ? (result.IsSynchronous ? result.ActionNote : "Dispatched successfully.") : result.ErrorMessage,
+            RawPayload = result.IsSynchronous ? result.RawPayload : null
         });
 
         await db.SaveChangesAsync(ct);

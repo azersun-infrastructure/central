@@ -19,6 +19,7 @@ using OpsCentral.Services.Dispatch;
 using OpsCentral.Services.Dispatch.AzureAutomation;
 using OpsCentral.Services.Dispatch.Jenkins;
 using OpsCentral.Services.Dispatch.Mock;
+using OpsCentral.Services.Dispatch.N8n;
 using OpsCentral.Services.Graph;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,6 +41,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // --- Options -----------------------------------------------------------
 builder.Services.Configure<JenkinsOptions>(builder.Configuration.GetSection(JenkinsOptions.SectionName));
 builder.Services.Configure<AzureAutomationOptions>(builder.Configuration.GetSection(AzureAutomationOptions.SectionName));
+builder.Services.Configure<N8nOptions>(builder.Configuration.GetSection(N8nOptions.SectionName));
 builder.Services.Configure<AdActionRoutingOptions>(builder.Configuration.GetSection(AdActionRoutingOptions.SectionName));
 builder.Services.Configure<ReconciliationOptions>(builder.Configuration.GetSection(ReconciliationOptions.SectionName));
 builder.Services.Configure<GraphAppOnlyOptions>(builder.Configuration.GetSection(GraphAppOnlyOptions.SectionName));
@@ -123,6 +125,10 @@ else
     builder.Services.AddKeyedScoped<IAdActionDispatcher, JenkinsDispatcher>(DispatchTarget.Jenkins);
     builder.Services.AddKeyedScoped<IAdActionDispatcher, AzureAutomationDispatcher>(DispatchTarget.AzureAutomation);
 }
+
+// n8n is a real, already-deployed service (not Jenkins/Azure Automation infra we're waiting on),
+// so it's never mocked — Dispatch:UseMock has no effect on this target.
+builder.Services.AddKeyedScoped<IAdActionDispatcher, N8nDispatcher>(DispatchTarget.N8n);
 
 builder.Services.AddScoped<IAdActionDispatchRouter, AdActionDispatchRouter>();
 builder.Services.AddScoped<IAdActionRequestService, AdActionRequestService>();

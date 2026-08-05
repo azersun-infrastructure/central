@@ -3,5 +3,6 @@ namespace OpsCentral.Models.Entities;
 public enum DispatchTarget
 {
     Jenkins,
-    AzureAutomation
+    AzureAutomation,
+    N8n
 }
