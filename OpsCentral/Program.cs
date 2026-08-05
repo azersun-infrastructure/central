@@ -132,10 +132,22 @@ builder.Services.AddHostedService<JobReconciliationHostedService>();
 var app = builder.Build();
 
 // --- Startup: apply migrations, seed local fallback admin ----------------
+// EF Core migrations bake in the design-time provider's column-type strings (e.g. bool as
+// SQLite's "INTEGER" vs Postgres' native "boolean"), so one migration set can't safely target
+// both providers. Migrations/ is Npgsql-only (matches production); the SQLite dev path uses
+// EnsureCreated, which builds the schema directly from the current model instead.
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+    if (string.Equals(useDatabase, "Postgres", StringComparison.OrdinalIgnoreCase))
+    {
+        await db.Database.MigrateAsync();
+    }
+    else
+    {
+        await db.Database.EnsureCreatedAsync();
+    }
+
     await LocalAdminSeeder.SeedAsync(db, scope.ServiceProvider.GetRequiredService<ILogger<Program>>());
 }
 
