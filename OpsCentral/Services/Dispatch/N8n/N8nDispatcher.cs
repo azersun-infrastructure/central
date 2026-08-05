@@ -32,7 +32,9 @@ public class N8nDispatcher(IHttpClientFactory httpClientFactory, IOptions<N8nOpt
         HttpResponseMessage response;
         try
         {
-            response = await client.PostAsJsonAsync(webhookUrl, new { searchTerm = context.Input }, ct);
+            // Both keys are sent since which one a given workflow reads depends on its purpose
+            // (Search reads searchTerm, Unlock/Enable/Disable read username) — harmless either way.
+            response = await client.PostAsJsonAsync(webhookUrl, new { searchTerm = context.Input, username = context.Input }, ct);
         }
         catch (Exception ex)
         {
@@ -47,6 +49,19 @@ public class N8nDispatcher(IHttpClientFactory httpClientFactory, IOptions<N8nOpt
         }
 
         var entries = ParseEntries(body);
+        var pretty = JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true });
+
+        // Write-action workflows (Unlock/Enable/Disable) report failure via {success:false,...}
+        // in a 200 response rather than an HTTP error, since n8n's default error response
+        // ("Error in workflow") drops the actual message — this is where that gets surfaced.
+        if (entries is [var single] && single.TryGetProperty("success", out var successProp) &&
+            successProp.ValueKind == JsonValueKind.False)
+        {
+            var errorNote = single.TryGetProperty("note", out var noteEl) && noteEl.ValueKind == JsonValueKind.String
+                ? noteEl.GetString()
+                : "n8n əməliyyatı uğursuz oldu.";
+            return DispatchResult.Completed(JobStatus.Failed, errorNote, pretty);
+        }
 
         var note = entries.Count switch
         {
@@ -54,8 +69,6 @@ public class N8nDispatcher(IHttpClientFactory httpClientFactory, IOptions<N8nOpt
             1 => DescribeEntry(entries[0]),
             _ => $"{entries.Count} nəticə tapıldı."
         };
-
-        var pretty = JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true });
 
         return DispatchResult.Completed(JobStatus.Succeeded, note, pretty);
     }
@@ -83,6 +96,15 @@ public class N8nDispatcher(IHttpClientFactory httpClientFactory, IOptions<N8nOpt
     {
         string? GetString(string name) =>
             entry.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+        // Unlock/Enable/Disable responses carry their own human-readable note (e.g. "X kilidi
+        // açıldı.") — prefer it over the LDAP-search-result summary below, which wouldn't find
+        // displayName/enabled/locked on this shape anyway.
+        var explicitNote = GetString("note");
+        if (!string.IsNullOrEmpty(explicitNote))
+        {
+            return explicitNote;
+        }
 
         var name = GetString("displayName") ?? GetString("sAMAccountName") ?? "?";
         var enabled = entry.TryGetProperty("enabled", out var e) && e.ValueKind == JsonValueKind.True;

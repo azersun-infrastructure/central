@@ -82,6 +82,10 @@
                                             {
                                                 <span class="status-badge @(val == "true" ? "status-failed" : "status-succeeded")">@(val == "true" ? "Kilidli" : "Açıq")</span>
                                             }
+                                            else if (col.Equals("success", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <span class="status-badge @(val == "true" ? "status-succeeded" : "status-failed")">@(val == "true" ? "Uğurlu" : "Uğursuz")</span>
+                                            }
                                             else
                                             {
                                                 @val
@@ -170,6 +174,12 @@
         ["mail"] = "E-poçt",
         ["userPrincipalName"] = "UPN",
         ["whenCreated"] = "Yaradılma tarixi",
+        ["success"] = "Nəticə",
+        ["action"] = "Əməliyyat",
+        ["username"] = "İstifadəçi adı",
+        ["note"] = "Qeyd",
+        ["error"] = "Xəta",
+        ["distinguishedName"] = "DN",
     };
 
     private static string FriendlyColumnName(string col) => FriendlyColumnNames.GetValueOrDefault(col, col);
