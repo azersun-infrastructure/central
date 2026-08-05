@@ -11,7 +11,7 @@
         <button class="action-btn" disabled="@(Busy || IsUsernameEmpty)" @onclick="() => SubmitAsync(AdActionType.Search)">Search</button>
         <button class="action-btn" disabled="@(Busy || IsUsernameEmpty)" @onclick="() => SubmitAsync(AdActionType.Disable)">Disable</button>
         <button class="action-btn" disabled="@(Busy || IsUsernameEmpty)" @onclick="() => SubmitAsync(AdActionType.Enable)">Enable</button>
-        <button class="action-btn" disabled="@(Busy || IsUsernameEmpty)" @onclick="() => SubmitAsync(AdActionType.SendLocked)">Send Locked</button>
+        <button class="action-btn" disabled="@Busy" @onclick="() => SubmitAsync(AdActionType.SendLocked)">Send Locked</button>
         <button class="action-btn" disabled="@Busy" @onclick="() => SubmitAsync(AdActionType.SyncAd)">Sync AD</button>
     </div>
 </div>
