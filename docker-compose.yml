@@ -1,6 +1,7 @@
 services:
   opscentral-app:
     build: ./OpsCentral
+    restart: unless-stopped
     ports:
       - "8080:8080"
     env_file:
@@ -14,6 +15,7 @@ services:
 
   postgres:
     image: postgres:16
+    restart: unless-stopped
     environment:
       - POSTGRES_DB=opscentral
       - POSTGRES_USER=opscentral_user
