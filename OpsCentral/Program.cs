@@ -20,6 +20,7 @@ using OpsCentral.Services.Dispatch.AzureAutomation;
 using OpsCentral.Services.Dispatch.Jenkins;
 using OpsCentral.Services.Dispatch.Mock;
 using OpsCentral.Services.Dispatch.N8n;
+using OpsCentral.Services.Email;
 using OpsCentral.Services.Graph;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,6 +49,7 @@ builder.Services.Configure<GraphAppOnlyOptions>(builder.Configuration.GetSection
 builder.Services.Configure<LocalAdminFallbackOptions>(builder.Configuration.GetSection(LocalAdminFallbackOptions.SectionName));
 builder.Services.Configure<AppOptions>(builder.Configuration.GetSection(AppOptions.SectionName));
 builder.Services.Configure<DispatchOptions>(builder.Configuration.GetSection(DispatchOptions.SectionName));
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
 
 // --- Auth: Entra ID SSO + local fallback admin -------------------------
 // DefaultScheme must be the cookie scheme (not OpenIdConnect) so that both an Entra-issued
@@ -97,6 +99,9 @@ builder.Services.AddSingleton(sp =>
     return new GraphServiceClient(credential, ["https://graph.microsoft.com/.default"]);
 });
 builder.Services.AddScoped<IGraphAppOnlyService, GraphAppOnlyService>();
+
+// --- Email (SGOFC open SMTP relay, no auth/TLS) ---------------------------
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // --- AD action dispatch ---------------------------------------------------
 var dispatchOptions = builder.Configuration.GetSection(DispatchOptions.SectionName).Get<DispatchOptions>()
