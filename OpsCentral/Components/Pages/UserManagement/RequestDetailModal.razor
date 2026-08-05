@@ -55,7 +55,7 @@
                             <tr>
                                 @foreach (var col in columns)
                                 {
-                                    <th>@col</th>
+                                    <th>@FriendlyColumnName(col)</th>
                                 }
                             </tr>
                         </thead>
@@ -65,7 +65,21 @@
                                 <tr>
                                     @foreach (var col in columns)
                                     {
-                                        <td>@(row.GetValueOrDefault(col, ""))</td>
+                                        <td>
+                                            @{ var val = row.GetValueOrDefault(col, ""); }
+                                            @if (col.Equals("enabled", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <span class="status-badge @(val == "true" ? "status-succeeded" : "status-failed")">@(val == "true" ? "Aktiv" : "Deaktiv")</span>
+                                            }
+                                            else if (col.Equals("locked", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <span class="status-badge @(val == "true" ? "status-failed" : "status-succeeded")">@(val == "true" ? "Kilidli" : "Açıq")</span>
+                                            }
+                                            else
+                                            {
+                                                @val
+                                            }
+                                        </td>
                                     }
                                 </tr>
                             }
@@ -106,6 +120,23 @@
         _lastParsedRequest = Request;
         (_tableColumns, _tableRows) = TryBuildTable(Request?.RawResultPayload);
     }
+
+    private static readonly Dictionary<string, string> FriendlyColumnNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["sAMAccountName"] = "İstifadəçi adı",
+        ["enabled"] = "Status",
+        ["locked"] = "Kilid",
+        ["displayName"] = "Ad Soyad",
+        ["title"] = "Vəzifə",
+        ["department"] = "Şöbə",
+        ["company"] = "Şirkət/Direktorluq",
+        ["description"] = "Qeyd",
+        ["mail"] = "E-poçt",
+        ["userPrincipalName"] = "UPN",
+        ["whenCreated"] = "Yaradılma tarixi",
+    };
+
+    private static string FriendlyColumnName(string col) => FriendlyColumnNames.GetValueOrDefault(col, col);
 
     /// <summary>Renders RawResultPayload as a table when it's a JSON array of flat objects
     /// (e.g. the n8n LDAP search results) — otherwise falls back to the raw-text view, since

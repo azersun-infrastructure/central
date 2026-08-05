@@ -35,6 +35,29 @@ h1:focus {
     --oc-accent-dark: #b91159;
     --oc-sidebar-bg: #1b1f2b;
     --oc-page-bg: #f2f3f7;
+    --oc-text: #1f2430;
+    --oc-text-muted: #8a8f9c;
+    --oc-panel-bg: #ffffff;
+    --oc-border: #eef0f3;
+    --oc-border-soft: #f2f3f6;
+    --oc-input-border: #d7dae0;
+    --oc-code-bg: #f7f7fa;
+    --oc-modal-overlay: rgba(15, 17, 26, 0.55);
+    --oc-shadow: rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="dark"] {
+    --oc-sidebar-bg: #12141b;
+    --oc-page-bg: #14161f;
+    --oc-text: #e4e6ec;
+    --oc-text-muted: #9099ab;
+    --oc-panel-bg: #1d2029;
+    --oc-border: #2a2e3a;
+    --oc-border-soft: #262a35;
+    --oc-input-border: #383d4a;
+    --oc-code-bg: #23262f;
+    --oc-modal-overlay: rgba(0, 0, 0, 0.65);
+    --oc-shadow: rgba(0, 0, 0, 0.3);
 }
 
 * {
@@ -45,7 +68,7 @@ body {
     margin: 0;
     font-family: -apple-system, Segoe UI, Roboto, sans-serif;
     background: var(--oc-page-bg);
-    color: #1f2430;
+    color: var(--oc-text);
 }
 
 .app-layout {
@@ -118,13 +141,36 @@ body {
 }
 
 .breadcrumb {
-    color: #8a8f9c;
+    color: var(--oc-text-muted);
     font-size: 0.85rem;
+}
+
+.top-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.theme-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--oc-panel-bg);
+    border: 1px solid var(--oc-input-border);
+    color: var(--oc-text);
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.theme-toggle-btn:hover {
+    border-color: var(--oc-accent);
 }
 
 .user-badge {
     font-size: 0.85rem;
-    color: #4a4f5c;
+    color: var(--oc-text-muted);
 }
 
 .link-button {
@@ -138,20 +184,22 @@ body {
 }
 
 .panel {
-    background: #fff;
+    background: var(--oc-panel-bg);
     border-radius: 10px;
     padding: 2rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px var(--oc-shadow);
     max-width: 640px;
 }
 
 .username-input {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #d7dae0;
+    border: 1px solid var(--oc-input-border);
     border-radius: 6px;
     margin: 1rem 0 1.25rem;
     font-size: 0.95rem;
+    background: var(--oc-panel-bg);
+    color: var(--oc-text);
 }
 
 .action-grid {
@@ -180,10 +228,10 @@ body {
 
 .result-table-wrapper {
     margin-top: 2rem;
-    background: #fff;
+    background: var(--oc-panel-bg);
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px var(--oc-shadow);
 }
 
 .result-table-header {
@@ -201,22 +249,23 @@ body {
 .result-table th {
     text-align: left;
     padding: 0.75rem 1.5rem;
-    color: #8a8f9c;
+    color: var(--oc-text-muted);
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid #eef0f3;
+    border-bottom: 1px solid var(--oc-border);
 }
 
 .result-table td {
     padding: 0.75rem 1.5rem;
-    border-bottom: 1px solid #f2f3f6;
+    border-bottom: 1px solid var(--oc-border-soft);
     font-size: 0.88rem;
+    color: var(--oc-text);
 }
 
 .result-table .empty-row {
     text-align: center;
-    color: #8a8f9c;
+    color: var(--oc-text-muted);
 }
 
 .status-badge {
@@ -237,7 +286,7 @@ body {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 17, 26, 0.55);
+    background: var(--oc-modal-overlay);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -245,7 +294,8 @@ body {
 }
 
 .modal {
-    background: #fff;
+    background: var(--oc-panel-bg);
+    color: var(--oc-text);
     border-radius: 10px;
     padding: 1.5rem 2rem;
     max-width: 900px;
@@ -278,7 +328,7 @@ body {
 }
 
 .modal-summary dt {
-    color: #8a8f9c;
+    color: var(--oc-text-muted);
 }
 
 .modal-summary dd {
@@ -294,16 +344,17 @@ body {
 
 .event-list li {
     padding: 0.4rem 0;
-    border-bottom: 1px solid #f2f3f6;
+    border-bottom: 1px solid var(--oc-border-soft);
 }
 
 .event-time {
-    color: #8a8f9c;
+    color: var(--oc-text-muted);
     margin-right: 0.5rem;
 }
 
 .raw-payload {
-    background: #f7f7fa;
+    background: var(--oc-code-bg);
+    color: var(--oc-text);
     padding: 0.75rem;
     border-radius: 6px;
     font-size: 0.78rem;
