@@ -70,6 +70,15 @@ public class N8nDispatcher(IHttpClientFactory httpClientFactory, IOptions<N8nOpt
             _ => $"{entries.Count} nəticə tapıldı."
         };
 
+        // Some workflows (e.g. LDAP Search) cap their own result count and signal a capped
+        // response via this header, since a plain count can't distinguish "that's everyone"
+        // from "there were more, ask something narrower".
+        if (response.Headers.TryGetValues("X-Result-Truncated", out var truncatedValues) &&
+            string.Equals(truncatedValues.FirstOrDefault(), "true", StringComparison.OrdinalIgnoreCase))
+        {
+            note += " (Daha çox nəticə var — daha dəqiq axtarış edin.)";
+        }
+
         return DispatchResult.Completed(JobStatus.Succeeded, note, pretty);
     }
 
